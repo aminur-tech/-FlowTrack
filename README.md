@@ -1,16 +1,55 @@
-# React + Vite
+# FlowTrack - Frontend Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**FlowTrack** is a single-page React application developed as part of a Frontend Intern assignment. The project implements a fully functional **Dashboard** with a **Login system**, fetching data from a provided REST API, and is designed based on the [Dribbble Dashboard Design](https://dribbble.com/shots/25241984-Task-Management-Dashboard).
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Live (https://flow-track-psi.vercel.app/)
 
-## React Compiler
+## Project Overview
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+The goal of this project was to develop a **React frontend** that includes:
 
-## Expanding the ESLint configuration
+1. **Login Page** – Authenticates users via a REST API.  
+2. **Dashboard Page** – Displays task management and analytics data fetched from the API.  
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The dashboard is responsive and matches the design specifications provided in the Dribbble link.
+
+---
+
+## Features
+
+- **Login Authentication** using REST API (`/api/login`)  
+- **Dashboard Page** with charts, tables, and task data  
+- **Dark Mode Toggle** for user preference  
+- **Language Selection** for interface localization  
+- **Sorting and Filtering** for dashboard tables  
+- **Responsive Design** compatible with desktop and mobile devices  
+- **Export Data** functionality (CSV/console demo)  
+- Optional **Persistent Login** via token storage (Bonus)  
+
+---
+
+## Technology Stack
+
+- **Frontend Framework:** React (Vite + SWC)  
+- **Routing:** React Router v7  
+- **Styling:** Tailwind CSS  
+- **Icons:** Lucide React  
+- **Data Visualization:** Recharts  
+- **HTTP Requests:** Axios  
+- **Notifications:** React Hot Toast  
+- **Date Utilities:** date-fns  
+
+---
+
+## Installation
+
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/aminur-tech/-FlowTrack
+cd flowtrack 
+
+```bash
+npm install

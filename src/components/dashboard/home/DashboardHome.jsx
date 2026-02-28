@@ -11,12 +11,48 @@ import {
 // Import Recharts components for dynamic analysis
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { getAnalytics, getOverview, getUsers } from '../../../services/dashboardApi';
+import TimeTracker from './TimeTracker';
+import toast from 'react-hot-toast';
 
 const DashboardHome = () => {
     const [overview, setOverview] = useState(null);
     const [analytics, setAnalytics] = useState([]);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [formData, setFormData] = useState({
+        title: "",
+        description: "",
+        category: "",
+        price: ""
+    });
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+    
+    // check if form is valid- all fields must be filled and price must be a positive number
+    const isFormValid =
+        formData.title.trim() !== "" &&
+        formData.description.trim() !== "" &&
+        formData.category.trim() !== "" &&
+        formData.price !== "" &&
+        Number(formData.price) > 0;
+
+    const handleSubmit = () => {
+        console.log("New Product:", formData);
+        toast.success(`Product "${formData.title}" added successfully!`);
+        setFormData({
+            title: "",
+            description: "",
+            category: "",
+            price: ""
+        });
+        setIsModalOpen(false);
+    };
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -26,11 +62,11 @@ const DashboardHome = () => {
                     getAnalytics(),
                     getUsers(),
                 ]);
-                
+
                 setOverview(overviewData);
                 setAnalytics(analyticsData);
                 setUsers(usersData);
-               
+
             } catch (err) {
                 console.error(err);
             } finally {
@@ -55,10 +91,85 @@ const DashboardHome = () => {
                     <p className="text-gray-500 dark:text-gray-400">Real-time dynamic analysis of your ecosystem.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 bg-emerald-900 dark:bg-emerald-600 text-white px-5 py-2.5 rounded-full font-bold hover:opacity-90 transition-all text-sm">
-                        <Plus size={18} /> Add Project
+                    <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-emerald-900 dark:bg-emerald-600 text-white px-5 py-2.5 rounded-full font-bold hover:opacity-90 transition-all text-sm">
+                        <Plus size={18} /> Add Product
                     </button>
                 </div>
+
+                {/* modal */}
+                {isModalOpen && (
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-300">
+                        <div className="bg-white dark:bg-slate-900 w-full max-w-md p-8 rounded-3xl shadow-2xl relative animate-in zoom-in-95 duration-300">
+
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-red-500"
+                            >
+                                ✕
+                            </button>
+
+                            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
+                                Add New Product
+                            </h2>
+
+                            <div className="space-y-4">
+
+                                <input
+                                    type="text"
+                                    name="title"
+                                    placeholder="Product Title"
+                                    value={formData.title}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                />
+
+                                <textarea
+                                    name="description"
+                                    placeholder="Product Description"
+                                    value={formData.description}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                />
+
+                                <input
+                                    type="text"
+                                    name="category"
+                                    placeholder="Category"
+                                    value={formData.category}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                />
+
+                                <input
+                                    type="number"
+                                    name="price"
+                                    placeholder="Price"
+                                    value={formData.price}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                />
+
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={!isFormValid}
+                                    className={`w-full py-3 rounded-xl font-bold transition-all 
+                                         ${isFormValid
+                                            ? "bg-emerald-900 dark:bg-emerald-600 text-white hover:scale-[1.02]"
+                                            : "bg-gray-300 dark:bg-slate-700 text-gray-500 cursor-not-allowed"
+                                        }
+  `}
+                                >
+                                    Add Product
+                                </button>
+
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* --- DYNAMIC STAT CARDS --- */}
@@ -80,17 +191,17 @@ const DashboardHome = () => {
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={analytics}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis 
-                                    dataKey="date" 
-                                    axisLine={false} 
-                                    tickLine={false} 
-                                    tick={{fill: '#94a3b8', fontSize: 10}}
+                                <XAxis
+                                    dataKey="date"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#94a3b8', fontSize: 10 }}
                                     tickFormatter={(str) => str.split('-').slice(2).join('')} // Shows only day
                                 />
                                 <YAxis hide />
-                                <Tooltip 
-                                    cursor={{fill: '#f8fafc'}}
-                                    contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}}
+                                <Tooltip
+                                    cursor={{ fill: '#f8fafc' }}
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
                                 />
                                 <Bar dataKey="views" radius={[10, 10, 10, 10]} barSize={35}>
                                     {analytics.map((entry, index) => (
@@ -126,32 +237,22 @@ const DashboardHome = () => {
                     </div>
                     <div className="space-y-6">
                         {users.slice(0, 4).map((user) => (
-                            <TeamMember 
+                            <TeamMember
                                 key={user.id}
-                                name={user.name} 
-                                task={user.email} 
-                                status={user.status === 'active' ? 'Active' : 'Offline'} 
-                                img={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
+                                name={user.name}
+                                task={user.email}
+                                status={user.status === 'active' ? 'Active' : 'Offline'}
+                                img={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
                             />
                         ))}
                     </div>
                 </div>
 
                 {/* --- TIME TRACKER --- */}
-                <div className="bg-emerald-950 rounded-[2.5rem] p-8 text-white relative overflow-hidden group">
-                    <div className="relative z-10 flex flex-col h-full justify-between">
-                        <h3 className="text-lg font-bold opacity-80">Project Timer</h3>
-                        <div className="my-8">
-                            <span className="text-5xl font-black tracking-tighter">01:24:08</span>
-                        </div>
-                        <div className="flex gap-4">
-                            <button className="bg-white text-emerald-950 p-4 rounded-full hover:scale-110 transition-all"><Pause fill="currentColor" size={20} /></button>
-                            <button className="bg-red-500 text-white p-4 rounded-full hover:scale-110 transition-all"><Square fill="currentColor" size={20} /></button>
-                        </div>
-                    </div>
-                    <div className="absolute -bottom-10 -right-10 w-48 h-48 border-[20px] border-emerald-800/30 rounded-full"></div>
-                </div>
+                <TimeTracker />
             </div>
+
+
         </div>
     );
 };

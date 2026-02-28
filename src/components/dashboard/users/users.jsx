@@ -9,12 +9,63 @@ import {
     Circle
 } from 'lucide-react';
 import { getUsers } from '../../../services/dashboardApi';
+import toast from 'react-hot-toast';
 
 const Users = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        role: "",
+        status: "active"
+    });
+
+    const isFormValid =
+        formData.name.trim() !== "" &&
+        formData.email.trim() !== "" &&
+        /\S+@\S+\.\S+/.test(formData.email) &&
+        formData.role.trim() !== "";
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    // handle form submission
+    const handleSubmit = () => {
+        if (!isFormValid) return;
+        console.log("New User:", formData);
+        toast.success(`User "${formData.name}" added successfully!`);
+
+        const newUser = {
+            id: Date.now(),
+            name: formData.name,
+            email: formData.email,
+            role: formData.role,
+            status: formData.status,
+            joinDate: new Date().toLocaleDateString()
+        };
+
+        setUsers([...users, newUser]);
+
+        setFormData({
+            name: "",
+            email: "",
+            role: "",
+            status: "active"
+        });
+
+        setIsModalOpen(false);
+    };
+
+    // fetch users on component mount
 
     useEffect(() => {
         const fetchData = async () => {
@@ -30,20 +81,20 @@ const Users = () => {
         fetchData();
     }, []);
 
-    // ✅ Search + Filter Logic
+   
+    // ✅ Filter users by global searchTerm
     const filteredUsers = useMemo(() => {
-        return users.filter((user) => {
-            const matchesSearch =
-                user.name.toLowerCase().includes(searchTerm.toLowerCase());
-
-            const matchesStatus =
-                statusFilter === "all" || user.status === statusFilter;
-
-            return matchesSearch && matchesStatus;
-        });
+        return users.filter(user =>
+            user.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            (statusFilter === "all" || user.status === statusFilter)
+        );
     }, [users, searchTerm, statusFilter]);
 
-    if (loading) return <p className="p-10">Loading...</p>;
+    if (loading) return (
+        <div className="flex items-center justify-center h-96">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-900"></div>
+        </div>
+    );
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -57,15 +108,85 @@ const Users = () => {
                         Manage your team members and their account permissions.
                     </p>
                 </div>
-                <button className="flex items-center justify-center gap-2 bg-emerald-900 dark:bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-emerald-950 dark:hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/10">
+                <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center gap-2 bg-emerald-900 dark:bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-emerald-950 dark:hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/10">
                     <UserPlus size={18} />
                     Add New User
                 </button>
+                {/* modal */}
+                {isModalOpen && (
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+                        <div className="bg-white dark:bg-slate-900 w-full max-w-md p-6 rounded-2xl shadow-xl relative border border-gray-100 dark:border-slate-800">
+
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="absolute top-3 right-4 text-gray-400 hover:text-red-500"
+                            >
+                                ✕
+                            </button>
+
+                            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+                                Add New User
+                            </h3>
+
+                            <div className="space-y-4">
+
+                                <input
+                                    type="text"
+                                    name="name"
+                                    placeholder="Full Name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                                />
+
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Email Address"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                                />
+
+                                <input
+                                    type="text"
+                                    name="role"
+                                    placeholder="Role"
+                                    value={formData.role}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                                />
+
+                                <select
+                                    name="status"
+                                    value={formData.status}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                                >
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={!isFormValid}
+                                    className={`w-full py-2 rounded-xl font-bold transition-all
+                                    ${isFormValid
+                                            ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                                            : "bg-gray-300 dark:bg-slate-700 text-gray-500 cursor-not-allowed"}`}
+                                >
+                                    Add User
+                                </button>
+
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* --- FILTER SECTION --- */}
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-sm">
-                
+
                 {/* Search */}
                 <div className="relative w-full md:w-96">
                     <Search
@@ -127,11 +248,10 @@ const Users = () => {
                                         </td>
 
                                         <td className="px-6 py-4">
-                                            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
-                                                user.status === 'active'
-                                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
-                                                    : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-gray-400'
-                                            }`}>
+                                            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${user.status === 'active'
+                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
+                                                : 'bg-red-100 text-red-500 dark:bg-red-900/20 dark:text-red-400'
+                                                }`}>
                                                 <Circle size={8} fill="currentColor" />
                                                 {user.status}
                                             </div>

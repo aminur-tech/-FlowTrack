@@ -1,11 +1,15 @@
-import React, { useContext, useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React, { useContext, useState, useEffect } from 'react';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, ListTodo, Calendar, BarChart2,
   Users, Settings, HelpCircle, LogOut,
   Search, Bell, Mail, Menu, X
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
+import { useSearch } from '../hooks/useSearch';
+import toast from 'react-hot-toast';
+
+
 
 const SidebarLink = ({ to, icon: Icon, label, badge, onClick }) => (
   <NavLink
@@ -34,10 +38,37 @@ const SidebarLink = ({ to, icon: Icon, label, badge, onClick }) => (
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  const {logout}=useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
+  const { searchTerm, setSearchTerm } = useSearch();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Only redirect if not already on products page and searchTerm is not empty
+    if (
+      searchTerm &&
+      !location.pathname.startsWith('/dashboard/products')
+    ) {
+      navigate('/dashboard/products');
+    }
+  }, [searchTerm, location.pathname, navigate]);
+
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleMail = () => {
+    window.open(
+      "https://mail.google.com/mail/?view=cm&fs=1&to=aminur.programme@gmail.com",
+      "_blank"
+    );
+  };
+
+  const handleBell = () => {
+    toast("No new notifications!", {
+      icon: "🔔",
+    });
   };
 
   return (
@@ -87,7 +118,7 @@ const Dashboard = () => {
             Menu
           </div>
 
-          <SidebarLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={toggleSidebar} />
+          <SidebarLink to="/dashboard/home" icon={LayoutDashboard} label="Dashboard" onClick={toggleSidebar} />
           <SidebarLink to="/dashboard/products" icon={ListTodo} label="Products" badge="12+" onClick={toggleSidebar} />
           <SidebarLink to="/dashboard/calendar" icon={Calendar} label="Calendar" onClick={toggleSidebar} />
           <SidebarLink to="/dashboard/analytics" icon={BarChart2} label="Analytics" onClick={toggleSidebar} />
@@ -138,21 +169,25 @@ const Dashboard = () => {
             </button>
 
             <div className="relative w-full max-w-md hidden md:block">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Search value={searchTerm}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="text"
-                placeholder="Search task"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl py-2.5 pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:bg-white dark:focus:bg-gray-900 transition-all"
               />
+
             </div>
           </div>
 
           <div className="flex items-center gap-3 md:gap-6">
 
             <div className="flex items-center gap-4 text-gray-400 dark:text-gray-500">
-              <Mail size={20} className="cursor-pointer hover:text-emerald-900 dark:hover:text-emerald-400" />
+              <Mail onClick={handleMail} size={20} className="cursor-pointer hover:text-emerald-900 dark:hover:text-emerald-400" />
               <div className="relative cursor-pointer hover:text-emerald-900 dark:hover:text-emerald-400">
-                <Bell size={20} />
+                <Bell onClick={handleBell} size={20} />
                 <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
               </div>
             </div>
@@ -179,7 +214,7 @@ const Dashboard = () => {
 
         {/* Page Content */}
         <main className="p-4 md:p-10 flex-1">
-          <Outlet />
+          <Outlet context={{ searchTerm, setSearchTerm }} />
         </main>
 
       </div>

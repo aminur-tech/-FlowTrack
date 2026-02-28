@@ -17,14 +17,15 @@ const Settings = () => {
 
   // Apply Dark Class to HTML
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [darkMode]);
+  const root = window.document.documentElement;
+  if (darkMode) {
+    root.classList.add("dark");
+    localStorage.setItem("theme", "dark");
+  } else {
+    root.classList.remove("dark");
+    localStorage.setItem("theme", "light");
+  }
+}, [darkMode]);
 
   const handleThemeToggle = () => setDarkMode(!darkMode);
 
@@ -116,6 +117,7 @@ const Settings = () => {
                 <option>English (US)</option>
                 <option>Spanish</option>
                 <option>French</option>
+                <option>Bangla</option>
               </select>
             </div>
           </section>

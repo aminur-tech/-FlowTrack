@@ -21,7 +21,7 @@ const Login = () => {
     setIsLoading(true);
     try {
       await login(email, password);
-      navigate("/dashboard");
+      navigate("/dashboard/home");
     } catch (err) {
       console.log(err);
       setError("The email or password you entered is incorrect.");
